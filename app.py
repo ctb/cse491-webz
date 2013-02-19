@@ -10,7 +10,7 @@ class SimpleApp(object):
         if path == '/':
             content_type = 'text/html'
             data = """\
-Check out:
+Visit:
 <a href='content'>a file</a>,
 <a href='error'>an error</a>,
 <a href='helmet'>an image</a>,
@@ -44,5 +44,5 @@ if __name__ == '__main__':
     httpd = make_server('', port, app)
     print "Serving on port %d..." % port
     print "Try using a Web browser to go to http://%s:%d/" % \
-          (socket.gethostname(), port)
+          (socket.getfqdn(), port)
     httpd.serve_forever()
