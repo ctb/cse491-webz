@@ -156,11 +156,3 @@ if __name__ == '__main__':
     print "Try using a Web browser to go to http://%s:%d/" % \
           (socket.getfqdn(), port)
     httpd.serve_forever()
-
-# quizlet??
-# what's different between versions of app.py
-# why can't we just link directly to functions; what changes would be needed?
-# what +/- do you get from using dispatch machinery
-# post; forms; cookies
-# testing
-# why 'list()'?
