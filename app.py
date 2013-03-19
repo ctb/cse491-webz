@@ -148,7 +148,6 @@ Your last name? <input type='text' name='lastname' size='20'>
 if __name__ == '__main__':
     import random, socket
     port = random.randint(8000, 9999)
-    port = 8999
     
     app = SimpleApp()
     
