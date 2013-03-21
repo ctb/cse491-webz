@@ -26,14 +26,11 @@ class SimpleApp(object):
         # the 'path'.
         fn = getattr(self, fn_name, None)
 
-        def my_start_response(a, b):
-            return start_response(a,b)
-
         if fn is None:
-            my_start_response("404 Not Found", html_headers)
+            start_response("404 Not Found", html_headers)
             return ["No path %s found" % path]
 
-        return fn(environ, my_start_response)
+        return fn(environ, start_response)
             
     def index(self, environ, start_response):
         data = """\
