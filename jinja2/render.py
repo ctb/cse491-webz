@@ -10,7 +10,12 @@ filename = sys.argv[1]
 print >>sys.stderr, '** Rendering:', filename
 
 # variables for the template rendering engine
-vars = dict(firstname='Zippy', lastname='Longstocking')
+
+list_of_names = ['Beth', 'Frank', 'Triana', 'Bob', '<i>Nobody</i>']
+
+vars = dict(firstname='Zippy', lastname='Longstocking',
+            names=list_of_names, is_tuesday=False)
+
 print >>sys.stderr, "** Using vars dictionary:", vars
 
 template = env.get_template(filename)

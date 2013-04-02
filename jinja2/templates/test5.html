@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+My first name is {{ firstname }} and my last name is {{ lastname }}.
+
+<ul>
+{% for name in names %}
+   <li><b>{{ name|e }}</b><p>
+{% endfor %}
+</ul>
+
+{% endblock %}

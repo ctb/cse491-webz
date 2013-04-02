@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+My first name is {{ firstname }} and my last name is {{ lastname }}.
+
+{% if is_tuesday %}
+  It is Tuesday!
+{% else %}
+  It is not Tuesday.
+{% endif %}
+
+{% endblock %}
