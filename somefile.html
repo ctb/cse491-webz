@@ -1,1 +1,77 @@
+<html>
+
+<!-- Show off some JQuery functionality --> 
+
+<head>
+<script type="text/javascript" charset="utf-8" src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="https://raw.github.com/datagraph/jquery-jsonrpc/master/jquery.jsonrpc.js"></script>
+
+</head>
+<body>
 <b>Hello, world</b>
+
+<p class="middle_paragraph">
+Something else goes here.
+</p>
+
+<!-- The above <p> element is then dynamically replaced with 'Yo', below. -->
+<script type="text/javascript">
+$("p.middle_paragraph").html("Yo!")
+</script>
+
+<p>
+
+Set input value: <input type='text' class='textbox5' value='3'/>
+
+<!-- The above input value is set to '6' -->
+<script type="text/javascript">
+$("input.textbox5").val("6")
+</script>
+
+<p>
+
+Respond to change: <input type='text' class='dyntext' value=''/>
+
+<script type="text/javascript">
+
+$('input.dyntext').change(function() {
+   alert($('input.dyntext').val()); }
+)
+
+</script>
+
+<p>
+
+Retrieve from server: Add <input type='text' class='a' value='' size='4' />
+and
+<input type='text' class='b' value='' size='4' />:
+
+<p class='toupdate' />
+
+<script type="text/javascript">
+
+function update_result(a, b, c) {
+   text = '<font color="red"><b>' + a + ' plus ' + b + ' equals ' + c + '</font></b>';
+   $('p.toupdate').html(text);
+}
+
+function do_add() {
+ a = $('input.a').val();
+
+ b = $('input.b').val();
+ $.ajax({
+     url: '/rpc', 
+     data: JSON.stringify ({method:'add', params:[a, b,], id:"0"} ),
+     type: "POST",
+     dataType: "json",
+     success: function (data) { update_result(a, b, data.result) },
+     error: function (err)  { alert ("Error");}
+  });
+}
+
+$('input.a').change(do_add);
+$('input.b').change(do_add);
+</script>
+
+</body>
+</html>
