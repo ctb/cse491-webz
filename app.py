@@ -48,6 +48,8 @@ class SimpleApp(object):
         return str(template.render(locals()))
         
     def login1(self, environ, start_response):
+        start_response('200 OK', list(html_headers))
+
         title = 'login'
         template = env.get_template('login1.html')
         return str(template.render(locals()))
