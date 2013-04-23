@@ -2,14 +2,22 @@
 from wsgiref.simple_server import make_server
 import urlparse
 import simplejson
+from Cookie import SimpleCookie
+import jinja2
+import uuid
+
+usernames = {}
+
+# this sets up jinja2 to load templates from the 'templates' directory
+loader = jinja2.FileSystemLoader('./jinja2/templates')
+env = jinja2.Environment(loader=loader)
 
 dispatch = {
     '/' : 'index',
-    '/content' : 'somefile',
-    '/error' : 'error',
-    '/helmet' : 'helmet',
-    '/form' : 'form',
-    '/recv' : 'recv',
+    '/login_1' : 'login1',
+    '/login1_process' : 'login1_process',
+    '/logout' : 'logout',
+    '/status' : 'status',
     '/rpc'  : 'dispatch_rpc'
 }
 
@@ -27,65 +35,78 @@ class SimpleApp(object):
         fn = getattr(self, fn_name, None)
 
         if fn is None:
-            start_response("404 Not Found", html_headers)
+            start_response("404 Not Found", list(html_headers))
             return ["No path %s found" % path]
 
         return fn(environ, start_response)
             
     def index(self, environ, start_response):
-        data = """\
-Visit:
-<a href='content'>a file</a>,
-<a href='error'>an error</a>,
-<a href='helmet'>an image</a>,
-<a href='somethingelse'>something else</a>, or
-<a href='form'>a form...</a>
-<p>
-<img src='/helmet'>
-"""
         start_response('200 OK', list(html_headers))
-        return [data]
+
+        title = 'index page'
+        template = env.get_template('index.html')
+        return str(template.render(locals()))
         
-    def somefile(self, environ, start_response):
-        content_type = 'text/html'
-        data = open('somefile.html').read()
+    def login1(self, environ, start_response):
+        title = 'login'
+        template = env.get_template('login1.html')
+        return str(template.render(locals()))
 
-        start_response('200 OK', list(html_headers))
-        return [data]
-
-    def error(self, environ, start_response):
-        status = "404 Not Found"
-        content_type = 'text/html'
-        data = "Couldn't find your stuff."
-       
-        start_response('200 OK', list(html_headers))
-        return [data]
-
-    def helmet(self, environ, start_response):
-        content_type = 'image/gif'
-        data = open('Spartan-helmet-Black-150-pxls.gif', 'rb').read()
-
-        start_response('200 OK', [('Content-type', content_type)])
-        return [data]
-
-    def form(self, environ, start_response):
-        data = form()
-
-        start_response('200 OK', list(html_headers))
-        return [data]
-   
-    def recv(self, environ, start_response):
+    def login1_process(self, environ, start_response):
         formdata = environ['QUERY_STRING']
         results = urlparse.parse_qs(formdata)
 
-        firstname = results['firstname'][0]
-        lastname = results['lastname'][0]
-
+        name = results['name'][0]
         content_type = 'text/html'
-        data = "First name: %s; last name: %s.  <a href='./'>return to index</a>" % (firstname, lastname)
 
+        # authentication would go here -- is this a valid username/password,
+        # for example?
+
+        k = str(uuid.uuid4())
+        usernames[k] = name
+
+        headers = list(html_headers)
+        headers.append(('Location', '/status'))
+        headers.append(('Set-Cookie', 'name1=%s' % k))
+
+        start_response('302 Found', headers)
+        return ["Redirect to /status..."]
+
+    def logout(self, environ, start_response):
+        if 'HTTP_COOKIE' in environ:
+            c = SimpleCookie(environ.get('HTTP_COOKIE', ''))
+            if 'name1' in c:
+                key = c.get('name1').value
+                name1_key = key
+
+                if key in usernames:
+                    del usernames[key]
+                    print 'DELETING'
+
+        pair = ('Set-Cookie',
+                'name1=deleted; Expires=Thu, 01-Jan-1970 00:00:01 GMT;')
+        headers = list(html_headers)
+        headers.append(('Location', '/status'))
+        headers.append(pair)
+
+        start_response('302 Found', headers)
+        return ["Redirect to /status..."]
+
+    def status(self, environ, start_response):
         start_response('200 OK', list(html_headers))
-        return [data]
+
+        name1 = ''
+        name1_key = '*empty*'
+        if 'HTTP_COOKIE' in environ:
+            c = SimpleCookie(environ.get('HTTP_COOKIE', ''))
+            if 'name1' in c:
+                key = c.get('name1').value
+                name1 = usernames.get(key, '')
+                name1_key = key
+                
+        title = 'login status'
+        template = env.get_template('status.html')
+        return str(template.render(locals()))
 
     def dispatch_rpc(self, environ, start_response):
         # POST requests deliver input data via a file-like handle,
@@ -144,8 +165,7 @@ Your last name? <input type='text' name='lastname' size='20'>
 
 if __name__ == '__main__':
     import random, socket
-    port = random.randint(8000, 9999)
-    
+    port = 8000
     app = SimpleApp()
     
     httpd = make_server('', port, app)
@@ -153,3 +173,4 @@ if __name__ == '__main__':
     print "Try using a Web browser to go to http://%s:%d/" % \
           (socket.getfqdn(), port)
     httpd.serve_forever()
+
